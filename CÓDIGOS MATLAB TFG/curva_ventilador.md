@@ -282,3 +282,4 @@ function exportarFigura(fig, rutaSinExt, cfg)
         end
     end
 end
+```
