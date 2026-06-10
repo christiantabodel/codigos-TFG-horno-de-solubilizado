@@ -1,10 +1,7 @@
 
 
 ```matlab
-%%========================================================================
 % CURVAS DEL VENTILADOR 
-% ========================================================================
-
 clear; clc; close all;
 
 % Asegura que las figuras se abran como ventanas flotantes (no acopladas).
