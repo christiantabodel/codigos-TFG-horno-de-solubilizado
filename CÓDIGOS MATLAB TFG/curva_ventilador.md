@@ -1,13 +1,17 @@
 codigo para escribir
 
 ```matlab
-% CURVAS DEL VENTILADOR 
+% CURVAS DEL VENTILADOR
+% Ajuste polinómico (grado 2) y figuras de la curva del ventilador: escalada
+% al 100 % y calibrada al 60 % (la usada en Fluent). Datos: VENTILADORES.xlsx.
+
 clear; clc; close all;
 
 % Asegura que las figuras se abran como ventanas flotantes (no acopladas).
 set(groot, 'defaultFigureWindowStyle', 'normal');
 
-% 1.CONFIGURACIÓN 
+% 1.CONFIGURACIÓN
+
 cfg.archivoExcel = 'VENTILADORES.xlsx';                 % nombre del Excel
 cfg.hoja         = 'ESCALADO DE VENTILADORES V2';       % hoja con datos buenos
 cfg.usarExcel    = true;   % true: lee del Excel | false: usa datos de respaldo
@@ -18,13 +22,13 @@ cfg.etq100 = "Ht'[Pa]";          % fila de salto de presión reescalado 100 %
 cfg.etq60  = "Ht escalado al 60"; % fila de salto de presión calibrado 60 %
 cfg.colDatos = 3:5;               % columnas C,D,E -> los 3 puntos
 
-% --- Valores de respaldo (del handoff) -----------------------------------
+% Valores de respaldo (del handoff)
 % Se emplean si cfg.usarExcel = false o si no se encuentra el archivo Excel.
 fallback.v     = [1.310927435, 1.787628321, 2.025978764];   % [m/s]
 fallback.dP100 = [705.661390 , 656.707742 , 622.307881 ];   % [Pa]  100 %
 fallback.dP60  = [423.396834 , 394.024645 , 373.384729 ];   % [Pa]   60 %
 
-% --- Ajuste y representación --------------------------------------------
+% Ajuste y representación
 cfg.gradoPoli    = 2;     % grado del polinomio (el handoff fija grado 2)
 cfg.xMin         = 0;     % límite inferior del eje X [m/s]
 cfg.xMax         = 2.5;   % límite superior del eje X [m/s]
@@ -34,28 +38,28 @@ cfg.margenSolido = 0.15;  % [m/s] el tramo CONTINUO cubre los puntos + este
                           % dibuja a trazos (discontinuo = extrapolación).
 cfg.mostrarTitulo = false; % false = SIN título ni subtítulo.
 
-% --- Exportación (opcional; DESACTIVADA por defecto) --------------------
+% Exportación (opcional; DESACTIVADA por defecto)
 % Por defecto no se guarda ningún archivo: las figuras solo se muestran en
-% pantalla 
-cfg.exportar = false; 
-cfg.carpetaSalida = 'figuras_ventiladores'; 
-cfg.dpiPNG = 300; 
-cfg.exportarSVG = true; 
+% pantalla
+cfg.exportar      = false;
+cfg.carpetaSalida = 'figuras_ventiladores';
+cfg.dpiPNG        = 300;
+cfg.exportarSVG   = true;
 
-% --- Estilo gráfico -----------------------------------------------------
-st.c100 = [0.00 0.45 0.74]; % azul  -> curva 100 %
-st.c60  = [0.85 0.33 0.10]; % naranja-> curva 60 % 
-st.LW   = 1.8; % grosor de línea
-st.MS   = 8; % tamaño de marcador
-st.FS   = 12; % tamaño de fuente base
-st.FSlab= 13; % tamaño de fuente de los ejes
-st.FSann= 10; % tamaño de fuente de las anotaciones (ecuaciones)
+% Estilo gráfico
+st.c100 = [0.00 0.45 0.74];   % azul  -> curva 100 %
+st.c60  = [0.85 0.33 0.10];   % naranja-> curva 60 %
+st.LW   = 1.8;   % grosor de línea
+st.MS   = 8;     % tamaño de marcador
+st.FS   = 12;    % tamaño de fuente base
+st.FSlab= 13;    % tamaño de fuente de los ejes
+st.FSann= 10;    % tamaño de fuente de las anotaciones (ecuaciones)
 
-% --- Símbolos por código Unicode-------------------
-SYM.delta = char(916); % Δ
-SYM.sup2  = char(178); % ²
+% Símbolos por código Unicode
+SYM.delta = char(916);   % Δ
+SYM.sup2  = char(178);   % ²
 
-%  2.CARGA DE DATOS
+% 2.CARGA DE DATOS
 
 rutaBase = fileparts(mfilename('fullpath'));
 if isempty(rutaBase); rutaBase = pwd; end
@@ -81,9 +85,10 @@ if ~leido
     fprintf('Usando valores de respaldo del handoff.\n');
 end
 
-% 3.AJUSTE POLINÓMICO (mínimos cuadrados, grado 2)
+% 3.AJUSTE POLINÓMICO  (mínimos cuadrados, grado 2)
 % polyfit resuelve por mínimos cuadrados; con 3 puntos y grado 2 el ajuste
 % es exacto (la parábola pasa por los 3 puntos), de ahí que R² = 1.
+
 [p100, R2_100] = ajustePoli(v, dP100, cfg.gradoPoli);
 [p60 , R2_60 ] = ajustePoli(v, dP60 , cfg.gradoPoli);
 
@@ -97,18 +102,18 @@ fprintf('Ajuste 100%%: dP = %.4f v^2 %+.4f v %+.4f   (R^2 = %.6f)\n', p100(1),p1
 fprintf('Ajuste  60%%: dP = %.4f v^2 %+.4f v %+.4f   (R^2 = %.6f)\n', p60(1) ,p60(2) ,p60(3) ,R2_60 );
 
 % 4.GENERACIÓN DE FIGURAS
-
 % Tramo CONTINUO: cubre los puntos de datos + un margen (cfg.margenSolido).
 % Resto del polinomio: línea DISCONTINUA (extrapolación fuera de los datos).
-a  = max(cfg.xMin, min(v) - cfg.margenSolido); % inicio del tramo continuo
-b  = min(cfg.xMax, max(v) + cfg.margenSolido); % fin del tramo continuo
-iS = (xx >= a) & (xx <= b); % máscara del tramo continuo
+
+a  = max(cfg.xMin, min(v) - cfg.margenSolido);   % inicio del tramo continuo
+b  = min(cfg.xMax, max(v) + cfg.margenSolido);   % fin    del tramo continuo
+iS = (xx >= a) & (xx <= b);                       % máscara del tramo continuo
 
 % Etiquetas de los ejes (con Δ por Unicode).
 labX = 'Velocidad normal, v [m/s]';
 labY = sprintf('Salto de presión, %sP [Pa]', SYM.delta);
 
-% ---------- FIGURA A: 100 % vs 60 % --------------------------------------
+% FIGURA A: 100 % vs 60 %
 figA = figure('Color','w','Units','centimeters','Position',[2 2 16 11], ...
               'WindowStyle','normal','Name','Figura A — escalada vs calibrada');
 axA  = axes(figA); hold(axA,'on'); grid(axA,'on'); box(axA,'on');
@@ -125,7 +130,7 @@ plot(axA, v, dP60 , 's','MarkerSize',st.MS,'MarkerFaceColor',st.c60 ,'MarkerEdge
 
 % Límites, etiquetas y título.
 xlim(axA,[cfg.xMin cfg.xMax]);
-ylim(axA,[min(yy60)-30, max(yy100)+70]); % techo ampliado para dejar hueco a la leyenda
+ylim(axA,[min(yy60)-30, max(yy100)+70]);   % techo ampliado: deja hueco a la leyenda
 xlabel(axA,labX,'FontSize',st.FSlab);
 ylabel(axA,labY,'FontSize',st.FSlab);
 if cfg.mostrarTitulo
@@ -134,7 +139,7 @@ if cfg.mostrarTitulo
             'FontSize',st.FS-1,'Color',[0.3 0.3 0.3]); catch, end
 end
 
-% Leyenda solo las dos curvas; el color identifica también su ecuación.
+% Leyenda breve (solo las dos curvas; el color identifica también su ecuación).
 legend([hA100 hA60], {'Escalada (100 %)','Calibrada (60 %)'}, ...
        'Location','northeast','FontSize',st.FS,'Box','on');
 
@@ -143,7 +148,7 @@ eq100 = comaDecimal(sprintf('%sP = %.3f v%s %+.3f v %+.2f   (R%s = %.3f)', ...
         SYM.delta, p100(1), SYM.sup2, p100(2), p100(3), SYM.sup2, R2_100));
 eq60  = comaDecimal(sprintf('%sP = %.3f v%s %+.3f v %+.2f   (R%s = %.3f)', ...
         SYM.delta, p60(1) , SYM.sup2, p60(2) , p60(3) , SYM.sup2, R2_60 ));
-ylA  = ylim(axA);  rngA = ylA(2)-ylA(1); % posición relativa a los límites Y
+ylA  = ylim(axA);  rngA = ylA(2)-ylA(1);    % posición relativa a los límites Y
 xann = cfg.xMin + 0.05*(cfg.xMax-cfg.xMin);
 text(axA, xann, ylA(1)+0.68*rngA, eq100, 'Color',st.c100,'FontSize',st.FSann, ...
      'FontWeight','bold','Interpreter','tex','BackgroundColor','w', ...
@@ -152,7 +157,7 @@ text(axA, xann, ylA(1)+0.42*rngA, eq60 , 'Color',st.c60 ,'FontSize',st.FSann, ..
      'FontWeight','bold','Interpreter','tex','BackgroundColor','w', ...
      'EdgeColor',st.c60 ,'Margin',4,'VerticalAlignment','middle');
 
-% ---------- FIGURA B: solo curva final 60 % ------------------------------
+% FIGURA B: solo curva final 60 %
 figB = figure('Color','w','Units','centimeters','Position',[2 2 16 11], ...
               'WindowStyle','normal','Name','Figura B — curva final Fluent');
 axB  = axes(figB); hold(axB,'on'); grid(axB,'on'); box(axB,'on');
@@ -196,14 +201,15 @@ else
 end
 
 % FUNCIONES LOCALES
+
 function vec = leerFila(C, etiqueta, colDatos)
-%LEERFILA Devuelve los valores numéricos de la fila cuya etiqueta (col. B)
-% coincide parcialmente con 'etiqueta'.
+%LEERFILA  Devuelve los valores numéricos de la fila cuya etiqueta (col. B)
+%          coincide parcialmente con 'etiqueta'.
     objetivo = normaliza(etiqueta);
     fila = 0;
     for r = 1:size(C,1)
         if size(C,2) >= 2
-            txt = normaliza(C{r,2}); % etiqueta en la columna B
+            txt = normaliza(C{r,2});         % etiqueta en la columna B
             if ~isempty(txt) && contains(txt, objetivo)
                 fila = r; break;
             end
@@ -230,14 +236,14 @@ function vec = leerFila(C, etiqueta, colDatos)
 end
 
 function s = comaDecimal(s)
-%COMADECIMAL Sustituye el punto decimal por coma.
-% Solo se usa para los TEXTOS de las ecuaciones; los cálculos siguen
-% empleando el punto decimal propio de MATLAB.
+%COMADECIMAL  Sustituye el punto decimal por coma.
+%   Solo se usa para los TEXTOS de las ecuaciones; los cálculos siguen
+%   empleando el punto decimal propio de MATLAB.
     s = strrep(s, '.', ',');
 end
 
 function s = normaliza(x)
-%NORMALIZA Convierte a texto en minúsculas y sin espacios; '' si está vacío.
+%NORMALIZA  Convierte a texto en minúsculas y sin espacios; '' si está vacío.
     s = '';
     if isa(x,'missing'); return; end
     if isnumeric(x)
@@ -249,8 +255,8 @@ function s = normaliza(x)
 end
 
 function [p, R2] = ajustePoli(x, y, grado)
-%AJUSTEPOLI Ajuste polinómico por mínimos cuadrados y coeficiente R².
-% R² = 1 - SSE/SST, con SSE = Σ(y - ŷ)² y SST = Σ(y - mean(y))².
+%AJUSTEPOLI  Ajuste polinómico por mínimos cuadrados y coeficiente R².
+%   R² = 1 - SSE/SST, con SSE = Σ(y - ŷ)²  y  SST = Σ(y - mean(y))².
     x = x(:).';  y = y(:).';
     ws = warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
     p  = polyfit(x, y, grado);
@@ -262,13 +268,13 @@ function [p, R2] = ajustePoli(x, y, grado)
 end
 
 function exportarFigura(fig, rutaSinExt, cfg)
-    if exist('exportgraphics','file') == 2         
+    if exist('exportgraphics','file') == 2
         exportgraphics(fig, [rutaSinExt '.png'], 'Resolution', cfg.dpiPNG);
         exportgraphics(fig, [rutaSinExt '.pdf'], 'ContentType','vector');
         if cfg.exportarSVG
             try, exportgraphics(fig, [rutaSinExt '.svg'], 'ContentType','vector'); catch, end
         end
-    else   
+    else
         print(fig, [rutaSinExt '.png'], '-dpng', ['-r' num2str(cfg.dpiPNG)]);
         print(fig, [rutaSinExt '.pdf'], '-dpdf', '-painters');
         if cfg.exportarSVG
@@ -276,4 +282,3 @@ function exportarFigura(fig, rutaSinExt, cfg)
         end
     end
 end
-```
