@@ -1,4 +1,4 @@
-codigo para escribir
+Este código pertenece al apartado de la metodología dedicado a los ventiladores y al tratamiento de su curva característica. A partir de los puntos de la curva ΔP–v previamente escalada al tamaño del ventilador del modelo, realiza el ajuste polinómico de segundo grado por mínimos cuadrados de dos series: la escalada al 100 % y la calibrada al 60 % del salto de presiones, que fue la finalmente implementada en Fluent mediante la condición fan. Al disponer de tres puntos por serie, el ajuste resulta exacto y R² = 1. Los datos se leen del Excel del escalado, aunque el script incorpora valores de respaldo por si este no estuviese disponible. Genera dos figuras: la comparativa de ambas curvas con sus ecuaciones y R², recogida en la memoria como Figura 35, y una segunda con únicamente la curva calibrada al 60 %. En ambas, el tramo continuo cubre el rango de los datos y el discontinuo corresponde a la extrapolación del polinomio.
 
 ```matlab
 % CURVAS DEL VENTILADOR
