@@ -2,14 +2,14 @@ texto para escribir
 
 
 ```matlab
-% Genera el journal (.jou) del barrido parametrico de Fluent a partir del Excel
+% Genera el journal (.jou) del barrido paramétrico de Fluent a partir del Excel
 % de design points (Name | Q1 | Q2 | Q3, en W/m^3). Cargar en Fluent standalone.
 
 function gen_journal()
 
 % CONFIGURACIÓN
 N_CASES           = 343;      % n° de design points a generar (343 = 7^3)
-N_ITER            = 100;      % iteraciones por caso (configuracion final)
+N_ITER            = 100;      % iteraciones por caso (configuración final)
 SAVE_CASE_PER_RUN = false;    % true -> write-case-data por caso (ocupa GB)
 BACKUP_EVERY      = 30;       % backup .dat cada N casos (0 = desactivado)
 WARM_RESTART      = false;    % false -> cold restart (hyb-init + yes por caso)
@@ -19,7 +19,7 @@ XLSX_IN  = 'iso_clip_7_casos.xlsx';
 SHEET_IN = 'iso_clip';        % columnas: Name | Q1 | Q2 | Q3   (W/m^3)
 JOU_OUT  = 'batch_343_final.jou';
 
-% Rutas en la MAQUINA REMOTA (donde corre Fluent)
+% Rutas en la MÁQUINA REMOTA (donde corre Fluent)
 CASE_BASE_REMOTE = 'D:/scratch/Christian_Taboada/SIMULACION_FINAL/CON LA PARTE DEL APOYO/simulacion_apoyo_final_files/dp0/FFF-27/Fluent/horno_base_convergido';
 S2S_FILE_REMOTE  = 'D:/scratch/Christian_Taboada/SIMULACION_FINAL/CON LA PARTE DEL APOYO/simulacion_apoyo_final_files/dp0/FFF-27/Fluent/radiation_v3.s2s.h5';
 OUT_DIR_REMOTE   = 'D:/scratch/Christian_Taboada/SIMULACION_FINAL/CON LA PARTE DEL APOYO/batch_output_343';
@@ -45,11 +45,11 @@ end
 if SAVE_CASE_PER_RUN, save_str = 'True'; else, save_str = 'False'; end
 if BACKUP_EVERY > 0, backup_str = num2str(BACKUP_EVERY); else, backup_str = 'desactivado'; end
 
-C = {};   % acumulador de lineas del journal
+C = {};   % acumulador de líneas del journal
 
 % Cabecera y preparación
 C{end+1} = [';  ' JOU_OUT];
-C{end+1} = ';  Generado automaticamente por gen_journal.m';
+C{end+1} = ';  Generado automáticamente por gen_journal.m';
 C{end+1} = [';  Casos: ' num2str(nUse) '   Iteraciones por caso: ' num2str(N_ITER)];
 C{end+1} = [';  Restart: ' restart_str];
 C{end+1} = [';  Guardar case+data por caso: ' save_str];
@@ -61,24 +61,24 @@ C{end+1} = ';       DEBE existir. Si no existe, /file/start-transcript no';
 C{end+1} = ';       puede crear el fichero, el transcript no arranca, y luego';
 C{end+1} = ';       /file/stop-transcript falla con:';
 C{end+1} = ';         "Error: A transcript has not been started."';
-C{end+1} = ';       Ademas, write-results-csv tambien fallaria al escribir.';
+C{end+1} = ';       Además, write-results-csv también fallaría al escribir.';
 C{end+1} = ';';
 C{end+1} = ';    2.Fluent abierto en modo STANDALONE (NO desde Workbench).';
 C{end+1} = ';       Workbench bloquea los comandos TUI con error workflow/wb.';
 C{end+1} = '';
 C{end+1} = '';
-C{end+1} = '; 1.PREPARACION';
+C{end+1} = '; 1.PREPARACIÓN';
 C{end+1} = '';
 C{end+1} = '; 1.1.Leer case + data base (convergido, ventiladores 60%)';
 C{end+1} = ['/file/read-case "' CASE_BASE_REMOTE '.cas.h5"'];
 C{end+1} = ['/file/read-data "' CASE_BASE_REMOTE '.dat.h5"'];
 C{end+1} = '';
-C{end+1} = '; 1.2.Re-leer view factors S2S (geometricos, no cambian con los parametros)';
+C{end+1} = '; 1.2.Re-leer view factors S2S (geométricos, no cambian con los parámetros)';
 C{end+1} = '/define/models/radiation/s2s/read-existing-view-factors';
 C{end+1} = ['"' S2S_FILE_REMOTE '"'];
 C{end+1} = 'yes';
 C{end+1} = '';
-C{end+1} = '; 1.3.Verificacion: listar Named Expressions';
+C{end+1} = '; 1.3.Verificación: listar Named Expressions';
 C{end+1} = '(display "\nNamed Expressions disponibles\n")';
 C{end+1} = '/define/named-expressions/list';
 C{end+1} = '(display "fin lista\n")';
@@ -108,10 +108,10 @@ C{end+1} = '                   (display (dec->comma (car r)))';
 C{end+1} = '                   (loop (cdr r) #f)))))';
 C{end+1} = '        (reverse results)))))';
 C{end+1} = '';
-C{end+1} = '; Helpers para extraccion de valores via transcript.';
+C{end+1} = '; Helpers para extracción de valores vía transcript.';
 C{end+1} = '; NOTA: %report-definition-eval NO existe en esta build de Fluent 2023 R2.';
 C{end+1} = '; Enfoque: /file/start-transcript + /solve/report-definitions/compute + parseo.';
-C{end+1} = '; Se usan integer->char para evitar problemas con literales de caracter Scheme.';
+C{end+1} = '; Se usan integer->char para evitar problemas con literales de carácter Scheme.';
 C{end+1} = '';
 C{end+1} = '(define *chr-newline* (integer->char 10))';
 C{end+1} = '(define *chr-return*  (integer->char 13))';
@@ -138,10 +138,10 @@ C{end+1} = '       (loop (+ i 1) (+ i 1)';
 C{end+1} = '             (if (> i start) (cons (substring s start i) acc) acc)))';
 C{end+1} = '      (else (loop (+ i 1) start acc)))))';
 C{end+1} = '';
-C{end+1} = '; Recorre todos los tokens de la linea y devuelve el ULTIMO que sea numerico.';
+C{end+1} = '; Recorre todos los tokens de la línea y devuelve el ÚLTIMO que sea numérico.';
 C{end+1} = '; Tolera unidades pegadas al final (p.ej. ''... 752.34 [K]'') porque ''[K]'' no';
-C{end+1} = '; convierte a numero y se ignora, quedandose con 752.34 como ultimo numerico.';
-C{end+1} = '; Devuelve #f si la linea no contiene ningun numero.';
+C{end+1} = '; convierte a número y se ignora, quedándose con 752.34 como último numérico.';
+C{end+1} = '; Devuelve #f si la línea no contiene ningún número.';
 C{end+1} = '(define (ultimo-numero-de-linea linea)';
 C{end+1} = '  (let loop ((toks (split-by-space linea)) (best #f))';
 C{end+1} = '    (cond ((null? toks) best)';
@@ -154,11 +154,11 @@ C{end+1} = '  (cond ((null? lst) default)';
 C{end+1} = '        ((= i 0) (car lst))';
 C{end+1} = '        (else (safe-ref (cdr lst) (- i 1) default))))';
 C{end+1} = '';
-C{end+1} = '; Detecta si una linea contiene ''iso-clip-'' (prefijo de los nombres de superficie';
-C{end+1} = '; de las report defs). Permite saltar la cabecera de sesion que Fluent imprime';
-C{end+1} = '; en el PRIMER transcript de la sesion (Build Id, PIDs de procesos paralelos,';
-C{end+1} = '; ano del Transcript Start Time). Esa cabecera contaminaba el parser con';
-C{end+1} = '; numeros espurios y producia el caso 1 con valores absurdos (bug 2026-05-24).';
+C{end+1} = '; Detecta si una línea contiene ''iso-clip-'' (prefijo de los nombres de superficie';
+C{end+1} = '; de las report defs). Permite saltar la cabecera de sesión que Fluent imprime';
+C{end+1} = '; en el PRIMER transcript de la sesión (Build Id, PIDs de procesos paralelos,';
+C{end+1} = '; año del Transcript Start Time). Esa cabecera contaminaba el parser con';
+C{end+1} = '; números espurios y producía el caso 1 con valores absurdos (bug 2026-05-24).';
 C{end+1} = '(define (contiene-iso-clip? linea)';
 C{end+1} = '  (let* ((n (string-length linea))';
 C{end+1} = '         (patron "iso-clip-")';
@@ -183,7 +183,7 @@ C{end+1} = '                (display (format #f "AVISO: solo ~a de ~a valores en
 C{end+1} = '                                 (length nums) n))';
 C{end+1} = '                (reverse nums))';
 C{end+1} = '               ((not (contiene-iso-clip? linea))';
-C{end+1} = '                ; Salta cabecera de sesion, prompts, lineas en blanco y echos.';
+C{end+1} = '                ; Salta cabecera de sesión, prompts, líneas en blanco y echos.';
 C{end+1} = '                (loop nums))';
 C{end+1} = '               (else';
 C{end+1} = '                (let ((val (ultimo-numero-de-linea linea)))';
@@ -213,19 +213,19 @@ for i = 1:nUse
     if ~WARM_RESTART
         % hyb-initialization en Fluent 2023 R2 abre el prompt
         %   "Do you want to discard the data and proceed? [no]"
-        % el 'yes' explicito de la linea siguiente fuerza el cold restart real.
+        % el 'yes' explícito de la línea siguiente fuerza el cold restart real.
         C{end+1} = '/solve/initialize/hyb-initialization';
         C{end+1} = 'yes';
         C{end+1} = '';
     end
     C{end+1} = ['/solve/iterate ' num2str(N_ITER)];
     C{end+1} = '';
-    C{end+1} = '; Extraccion de valores via transcript (sin %report-definition-eval)';
-    C{end+1} = '; Fichero unico por caso -> nunca pre-existe -> sin dialogo "OK to overwrite?"';
+    C{end+1} = '; Extracción de valores vía transcript (sin %report-definition-eval)';
+    C{end+1} = '; Fichero único por caso -> nunca pre-existe -> sin diálogo "OK to overwrite?"';
     C{end+1} = ['/file/start-transcript "' tcaso '"'];
     for k = 1:numel(REPORT_DEFS)
         C{end+1} = ['/solve/report-definitions/compute ' REPORT_DEFS{k}];
-        C{end+1} = '';   % linea en blanco: cierra el prompt interactivo del compute
+        C{end+1} = '';   % línea en blanco: cierra el prompt interactivo del compute
     end
     C{end+1} = '/file/stop-transcript';
     C{end+1} = '';
@@ -257,7 +257,7 @@ C{end+1} = '; 3.FIN';
 C{end+1} = '(display "\nBATCH COMPLETADO\n")';
 C{end+1} = '';
 
-% Escritura del .jou con saltos de linea LF
+% Escritura del .jou con saltos de línea LF
 % Se usa fwrite (no fprintf) para escribir los bytes literalmente:
 txt = strjoin(C, char(10));
 fid = fopen(JOU_OUT, 'w');
