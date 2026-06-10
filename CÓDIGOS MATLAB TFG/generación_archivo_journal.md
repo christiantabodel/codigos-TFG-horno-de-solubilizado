@@ -2,18 +2,21 @@ texto para escribir
 
 
 
+% Genera el journal (.jou) del barrido parametrico de Fluent a partir del Excel
+% de design points (Name | Q1 | Q2 | Q3, en W/m^3). Cargar en Fluent standalone.
+
 function gen_journal()
 
-% ------------------------- CONFIGURACIÓN -----------------------------
-N_CASES = 343; % n° de design points a generar (343 = 7^3)
-N_ITER = 100; % iteraciones por caso (configuracion final)
-SAVE_CASE_PER_RUN = false; % true -> write-case-data por caso (ocupa GB)
-BACKUP_EVERY = 30; % backup .dat cada N casos (0 = desactivado)
-WARM_RESTART = false; % false -> cold restart (hyb-init + yes por caso)
+% CONFIGURACIÓN
+N_CASES           = 343;      % n° de design points a generar (343 = 7^3)
+N_ITER            = 100;      % iteraciones por caso (configuracion final)
+SAVE_CASE_PER_RUN = false;    % true -> write-case-data por caso (ocupa GB)
+BACKUP_EVERY      = 30;       % backup .dat cada N casos (0 = desactivado)
+WARM_RESTART      = false;    % false -> cold restart (hyb-init + yes por caso)
 
 % Entrada (Excel de design points) y salida (.jou)
 XLSX_IN  = 'iso_clip_7_casos.xlsx';
-SHEET_IN = 'iso_clip';        % columnas: Name | P1 | P2 | P3   (W/m^3)
+SHEET_IN = 'iso_clip';        % columnas: Name | Q1 | Q2 | Q3   (W/m^3)
 JOU_OUT  = 'batch_343_final.jou';
 
 % Rutas en la MAQUINA REMOTA (donde corre Fluent)
@@ -24,9 +27,8 @@ CSV_OUT_REMOTE   = [OUT_DIR_REMOTE '/resultados_343.csv'];
 
 INPUT_PARAMS = {'q_res1_Wm3','q_res2_Wm3','q_res3_Wm3'};
 REPORT_DEFS  = {'t_avg_belt','t_avg_belt_interior_horno','t_max_belt','t_min_belt'};
-% ---------------------------------------------------------------------
 
-% 1) Leer y depurar los design points del Excel
+% 1.Leer y depurar los design points del Excel
 T = readtable(XLSX_IN, 'Sheet', SHEET_IN, 'VariableNamingRule','preserve');
 nm_all = string(T{:,1});
 P_all  = T{:,2:4};
@@ -43,20 +45,17 @@ end
 if SAVE_CASE_PER_RUN, save_str = 'True'; else, save_str = 'False'; end
 if BACKUP_EVERY > 0, backup_str = num2str(BACKUP_EVERY); else, backup_str = 'desactivado'; end
 
-C = {}; % acumulador de lineas del journal
+C = {};   % acumulador de lineas del journal
 
-% --------------------- Cabecera y preparación ------------------------
-C{end+1} = '; ================================================================';
+% Cabecera y preparación
 C{end+1} = [';  ' JOU_OUT];
 C{end+1} = ';  Generado automaticamente por gen_journal.m';
 C{end+1} = [';  Casos: ' num2str(nUse) '   Iteraciones por caso: ' num2str(N_ITER)];
 C{end+1} = [';  Restart: ' restart_str];
 C{end+1} = [';  Guardar case+data por caso: ' save_str];
 C{end+1} = [';  Backup cada N casos: ' backup_str];
-C{end+1} = '; ================================================================';
 C{end+1} = ';  PRE-FLIGHT CHECK (verificar MANUALMENTE antes de cargar el .jou)';
-C{end+1} = ';  ----------------------------------------------------------------';
-C{end+1} = ';    1) El directorio remoto:';
+C{end+1} = ';    1.El directorio remoto:';
 C{end+1} = [';         ' OUT_DIR_REMOTE];
 C{end+1} = ';       DEBE existir. Si no existe, /file/start-transcript no';
 C{end+1} = ';       puede crear el fichero, el transcript no arranca, y luego';
@@ -64,28 +63,27 @@ C{end+1} = ';       /file/stop-transcript falla con:';
 C{end+1} = ';         "Error: A transcript has not been started."';
 C{end+1} = ';       Ademas, write-results-csv tambien fallaria al escribir.';
 C{end+1} = ';';
-C{end+1} = ';    2) Fluent abierto en modo STANDALONE (NO desde Workbench).';
+C{end+1} = ';    2.Fluent abierto en modo STANDALONE (NO desde Workbench).';
 C{end+1} = ';       Workbench bloquea los comandos TUI con error workflow/wb.';
-C{end+1} = '; ================================================================';
 C{end+1} = '';
 C{end+1} = '';
-C{end+1} = '; ==================== 1) PREPARACION ============================';
+C{end+1} = '; 1.PREPARACION';
 C{end+1} = '';
-C{end+1} = '; 1.1) Leer case + data base (convergido, ventiladores 60%)';
+C{end+1} = '; 1.1.Leer case + data base (convergido, ventiladores 60%)';
 C{end+1} = ['/file/read-case "' CASE_BASE_REMOTE '.cas.h5"'];
 C{end+1} = ['/file/read-data "' CASE_BASE_REMOTE '.dat.h5"'];
 C{end+1} = '';
-C{end+1} = '; 1.2) Re-leer view factors S2S (geometricos, no cambian con los parametros)';
+C{end+1} = '; 1.2.Re-leer view factors S2S (geometricos, no cambian con los parametros)';
 C{end+1} = '/define/models/radiation/s2s/read-existing-view-factors';
 C{end+1} = ['"' S2S_FILE_REMOTE '"'];
 C{end+1} = 'yes';
 C{end+1} = '';
-C{end+1} = '; 1.3) Verificacion: listar Named Expressions';
-C{end+1} = '(display "\n--- Named Expressions disponibles ---\n")';
+C{end+1} = '; 1.3.Verificacion: listar Named Expressions';
+C{end+1} = '(display "\nNamed Expressions disponibles\n")';
 C{end+1} = '/define/named-expressions/list';
-C{end+1} = '(display "--- fin lista ---\n")';
+C{end+1} = '(display "fin lista\n")';
 C{end+1} = '';
-C{end+1} = '; 1.4) Definiciones Scheme: acumulador de resultados y escritura CSV';
+C{end+1} = '; 1.4.Definiciones Scheme: acumulador de resultados y escritura CSV';
 C{end+1} = '(define results ''())';
 C{end+1} = '';
 C{end+1} = '(define (dec->comma x)';
@@ -194,10 +192,10 @@ C{end+1} = '                      (loop (cons val nums))';
 C{end+1} = '                      (loop nums))))))))))))';
 C{end+1} = '';
 C{end+1} = '';
-C{end+1} = '; ==================== 2) CASOS =================================';
+C{end+1} = '; 2.CASOS';
 C{end+1} = '';
 
-% --------------------------- Bloque por caso -------------------------
+% Bloque por caso
 for i = 1:nUse
     nm = char(Name(i));
     s1 = sprintf('%.4f', Pv(i,1));
@@ -205,29 +203,29 @@ for i = 1:nUse
     s3 = sprintf('%.4f', Pv(i,3));
     tcaso = [OUT_DIR_REMOTE '/tmp_rd_values_' num2str(i) '.txt'];
 
-    C{end+1} = ['; ---------- CASO ' num2str(i) ' / ' num2str(nUse) ': ' nm ' (' s1 ', ' s2 ', ' s3 ') ----------'];
-    C{end+1} = ['(display "\n========== CASO ' num2str(i) ' / ' num2str(nUse) ' ==========\n")'];
+    C{end+1} = ['; CASO ' num2str(i) ' / ' num2str(nUse) ': ' nm ' (' s1 ', ' s2 ', ' s3 ')'];
+    C{end+1} = ['(display "\nCASO ' num2str(i) ' / ' num2str(nUse) '\n")'];
     C{end+1} = '';
     C{end+1} = ['/define/named-expressions/edit ' INPUT_PARAMS{1} ' definition "' s1 ' [W/m^3]" quit'];
     C{end+1} = ['/define/named-expressions/edit ' INPUT_PARAMS{2} ' definition "' s2 ' [W/m^3]" quit'];
     C{end+1} = ['/define/named-expressions/edit ' INPUT_PARAMS{3} ' definition "' s3 ' [W/m^3]" quit'];
     C{end+1} = '';
     if ~WARM_RESTART
- % hyb-initialization en Fluent 2023 R2 abre el prompt
-  % "Do you want to discard the data and proceed? [no]"
- % el 'yes' explicito de la linea siguiente fuerza el cold restart real.
+        % hyb-initialization en Fluent 2023 R2 abre el prompt
+        %   "Do you want to discard the data and proceed? [no]"
+        % el 'yes' explicito de la linea siguiente fuerza el cold restart real.
         C{end+1} = '/solve/initialize/hyb-initialization';
         C{end+1} = 'yes';
         C{end+1} = '';
     end
     C{end+1} = ['/solve/iterate ' num2str(N_ITER)];
     C{end+1} = '';
-    C{end+1} = '; ---- Extraccion de valores via transcript (sin %report-definition-eval) ----';
+    C{end+1} = '; Extraccion de valores via transcript (sin %report-definition-eval)';
     C{end+1} = '; Fichero unico por caso -> nunca pre-existe -> sin dialogo "OK to overwrite?"';
     C{end+1} = ['/file/start-transcript "' tcaso '"'];
     for k = 1:numel(REPORT_DEFS)
         C{end+1} = ['/solve/report-definitions/compute ' REPORT_DEFS{k}];
-        C{end+1} = ''; % linea en blanco: cierra el prompt interactivo del compute
+        C{end+1} = '';   % linea en blanco: cierra el prompt interactivo del compute
     end
     C{end+1} = '/file/stop-transcript';
     C{end+1} = '';
@@ -253,16 +251,14 @@ for i = 1:nUse
     end
 end
 
-% ------------------------------- Footer ------------------------------
+% Footer
 C{end+1} = '';
-C{end+1} = '; ==================== 3) FIN ===================================';
-C{end+1} = '(display "\n=======================================================\n")';
-C{end+1} = '(display "  BATCH COMPLETADO\n")';
-C{end+1} = '(display "=======================================================\n")';
+C{end+1} = '; 3.FIN';
+C{end+1} = '(display "\nBATCH COMPLETADO\n")';
 C{end+1} = '';
 
-% ------------- Escritura del .jou con saltos de linea LF --------------
-% Se usa fwrite (no fprintf) para escribir los bytes literalmente: 
+% Escritura del .jou con saltos de linea LF
+% Se usa fwrite (no fprintf) para escribir los bytes literalmente:
 txt = strjoin(C, char(10));
 fid = fopen(JOU_OUT, 'w');
 fwrite(fid, txt, 'char');
