@@ -1,5 +1,6 @@
+Paso 4: validación del HOSVD mediante casos nuevos simulados.
 
-Texto de ejemplo
+Último paso correspondiente a la validación final del modelo. Se construye el HOSVD con la base de datos completa de los 343 casos, reteniendo cuatro modos por dirección, y se evalúa sobre 20 escenarios nuevos simulados de forma independiente en CFD, que se leen de una plantilla externa junto con sus resultados. Los casos se clasifican de manera automática en dentro o fuera del rango paramétrico estudiado, distinguiendo así la interpolación de la extrapolación, y para cada grupo se calculan el RMSE, el error máximo y el R², además del detalle caso a caso. El script mide también el tiempo de predicción por caso, construyendo el modelo una sola vez y promediando varias repeticiones, dato que se emplea en la comparativa de coste computacional frente a la simulación CFD. Genera siete figuras, de las que proceden las Figuras 53 a 56 de la memoria: predicción frente a CFD para ambos grupos, RMSE y error máximo por salida (dentro frente a fuera de rango), error absoluto de T_max caso a caso y distribución de los 20 casos en el espacio de potencias, con el rango estudiado delimitado. Los resultados se guardan en resultados_validacion_nuevos.mat.
 
 
 ```matlab
