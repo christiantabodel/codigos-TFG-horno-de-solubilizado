@@ -1,4 +1,4 @@
-texto para escribir
+Este código genera de manera automática el journal (.jou) con el que se ejecutó el barrido paramétrico en ANSYS Fluent en modo standalone. A partir de la hoja de Excel de los design points, recorre las 343 ternas (Q1, Q2, Q3) y escribe para cada caso su bloque de comandos: actualización de las named expressions de las resistencias, reinicialización mediante cold restart (de tal forma que cada caso resulta independiente del anterior), las 100 iteraciones de cálculo y la evaluación de los report definitions, cuyos valores se vuelcan de manera incremental a un archivo .csv externo mediante un parser del transcript escrito en Scheme. A modo de salvaguarda ante posibles cortes durante la ejecución, el journal guarda también un archivo de datos (.dat) cada 30 casos. Este código permite, por tanto, replicar íntegramente el journal de cerca de 13 000 líneas empleado en el trabajo para la generación de la base de datos.
 
 
 ```matlab
