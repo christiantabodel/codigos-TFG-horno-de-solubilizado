@@ -1,7 +1,7 @@
 En ç
 
 
-
+``` matlab
 % COMPRESIÓN DE IMAGENES MEDIANTE SVD
 % Comparativa: imagen original vs. aproximación de rango r=50
 
@@ -63,4 +63,4 @@ ylim([0 1]);
 xlim([-20 min(nx,ny)]);
 
 set(gcf, 'Color', 'w', 'Position', [100 100 900 350]);
-
+```
