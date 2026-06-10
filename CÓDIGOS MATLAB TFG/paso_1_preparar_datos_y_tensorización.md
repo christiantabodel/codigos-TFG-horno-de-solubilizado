@@ -1,4 +1,6 @@
-Aquí se escribirá el texto explicando
+Paso 1: preparación de los datos y tensorización
+
+Primer paso del proceso seguido para la implementación del modelo de orden reducido, correspondiente al preprocesado de los datos en MATLAB descrito en la metodología. El script lee el fichero con los resultados del barrido (admite tanto Excel como CSV) y somete la base de datos a una serie de comprobaciones de integridad: analiza que estén presentes las columnas de las tres entradas y de las cuatro salidas, que no existan valores faltantes ni ternas (Q1, Q2, Q3) duplicadas, que cada parámetro presente sus siete niveles equiespaciados y que la rejilla 7×7×7 esté completa, con las 343 combinaciones representadas una única vez. Superadas estas comprobaciones, asigna a cada design point su celda (i, j, k) en función de sus valores de potencia y construye un tensor de tercer orden 7×7×7 por cada salida térmica, verificando después que cada registro de la tabla coincide con su celda del tensor. El resultado se guarda en un fichero llamado datos_preparados.mat, del que parten los pasos siguientes de la cadena.
 
 
 ```matlab
