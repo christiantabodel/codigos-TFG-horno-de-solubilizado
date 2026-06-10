@@ -265,3 +265,4 @@ fwrite(fid, txt, 'char');
 fclose(fid);
 fprintf('Journal generado: %s  (%d casos, %d lineas)\n', JOU_OUT, nUse, numel(C));
 end
+```
