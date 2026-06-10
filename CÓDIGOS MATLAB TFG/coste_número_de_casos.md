@@ -1,4 +1,4 @@
-v b gv
+Este código acompaña a la elección del tamaño del barrido paramétrico en la metodología (apartado 4.5.2). Representa, frente al número de niveles por resistencia n, el número de casos resultante N = n³ en el eje izquierdo y, en el derecho, el tiempo de cálculo estimado en días, obtenido a partir del tiempo medio cronometrado por simulación (22 min 8 s). Sobre la curva se marcan los escenarios considerados (n = 6, 7, 8 y 10), con su número de casos y su coste temporal, destacando el adoptado en el trabajo: n = 7, equivalente a 343 casos y unos 5,3 días de cálculo. El script exporta dos versiones de la misma gráfica, con el eje horizontal arrancando en n = 4 o en n = 0; la segunda, con el tramo inicial representado a trazos, es la que figura en la memoria como Figura 40. Esto se puede ver como una justificación visual del número de casos simulados en el batch analysis.
 
 ```matlab
 % fig_escenarios.m  
